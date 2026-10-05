@@ -1,0 +1,9 @@
+{
+    "name": "chonka/my_project",
+    "autoload": {
+        "psr-4": {
+            "Chonka\\MyProject\\": "src/"
+        }
+    },
+    "require": {}
+}

@@ -5,5 +5,8 @@
             "Chonka\\MyProject\\": "src/"
         }
     },
-    "require": {}
+    "require": {
+        "illuminate/database": "^13.34",
+        "monolog/monolog": "^3.12"
+    }
 }

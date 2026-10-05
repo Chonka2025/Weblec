@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  # PHP-обработчик
+  php:
+    image: php:8.4-fpm
+    volumes:
+      - .:/var/www
+    working_dir: /var/www
+    command: >
+      sh -c "apt-get update && apt-get install -y libpq-dev && docker-php-ext-install pdo pdo_pgsql pgsql && exec php-fpm"
+    networks:
+      - lab_network
+
+  # Веб-сервер Nginx
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "8085:80"
+    volumes:
+      - .:/var/www
+    command: >
+      sh -c "echo 'server {
+        listen 80;
+        index index.php index.html;
+        root /var/www/public;
+        location / { try_files $$uri $$uri/ /index.php?$$query_string; }
+        location ~ \.php$$ {
+          try_files $$uri =404;
+          fastcgi_pass php:9000;
+          include fastcgi_params;
+          fastcgi_param SCRIPT_FILENAME $$document_root$$fastcgi_script_name;
+        }
+      }' > /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'"
+    depends_on:
+      - php
+    networks:
+      - lab_network
+
+  # База данных PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    ports:
+      - "5435:5432"
+    environment:
+      POSTGRES_DB: lab_db
+      POSTGRES_USER: lab_user
+      POSTGRES_PASSWORD: lab_password
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - lab_network
+
+networks:
+  lab_network:
+    driver: bridge
+
+volumes:
+  pgdata:
+
